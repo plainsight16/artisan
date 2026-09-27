@@ -35,7 +35,7 @@ export function Chat({
   return (
     <div className="chat-page">
       <header className="chat-header">
-        <button className="icon-button" onClick={back}>
+        <button className="icon-button" onClick={back} aria-label="Back to profile">
           <Icon>arrow_back</Icon>
         </button>
         <img src={artisan.image} alt="" />

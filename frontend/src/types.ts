@@ -1,4 +1,4 @@
-export type View = "home" | "profile" | "chat";
+export type View = "home" | "profile" | "chat" | "login" | "signup";
 
 export type Artisan = {
   id: number;

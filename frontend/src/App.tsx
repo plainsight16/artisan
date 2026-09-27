@@ -3,10 +3,20 @@ import "./index.css";
 import "./App.css";
 import type { Artisan, View } from "./types";
 import { artisans, filterArtisans } from "./data/artisans";
+import type { ChatIntent } from "./auth/gate";
+import {
+  isAuthReachable,
+  viewAfterAuthSuccess,
+  viewForChatIntent,
+} from "./auth/gate";
+import type { Session } from "./auth/session";
+import { loadSession, saveSession } from "./auth/session";
 import { Header } from "./components/Header";
 import { Home } from "./components/Home";
 import { Profile } from "./components/Profile";
 import { Chat } from "./components/Chat";
+import { Login } from "./components/Login";
+import { Signup } from "./components/Signup";
 import { MobileNav } from "./components/MobileNav";
 
 export default function App() {
@@ -16,7 +26,14 @@ export default function App() {
   const [saved, setSaved] = useState<number[]>([]);
   const [messages, setMessages] = useState<string[]>([]);
   const [draft, setDraft] = useState("");
+  const [session, setSession] = useState<Session | null>(() => loadSession());
+  const [intent, setIntent] = useState<ChatIntent>(null);
+  const [returnView, setReturnView] = useState<"home" | "profile">("home");
   const filtered = filterArtisans(filter);
+  const showAuth =
+    (view === "login" || view === "signup") && isAuthReachable(intent);
+  const shellView = view === "profile" ? "profile" : "home";
+
   const goHome = () => setView("home");
   const goProfile = (artisan: Artisan) => {
     setSelected(artisan);
@@ -25,8 +42,23 @@ export default function App() {
   };
   const goChat = (artisan = selected) => {
     setSelected(artisan);
-    setView("chat");
+    setReturnView(view === "profile" ? "profile" : "home");
     window.scrollTo(0, 0);
+    const next = viewForChatIntent(session);
+    if (next === "login") setIntent("chat");
+    setView(next);
+  };
+  const finishAuth = (nextSession: Session) => {
+    const next = viewAfterAuthSuccess(intent);
+    saveSession(nextSession);
+    setSession(nextSession);
+    setView(next);
+    setIntent(null);
+    window.scrollTo(0, 0);
+  };
+  const cancelAuth = () => {
+    setIntent(null);
+    setView(returnView);
   };
   const toggleSaved = (id: number) => {
     setSaved((x) =>
@@ -50,10 +82,34 @@ export default function App() {
         back={() => setView("profile")}
       />
     );
+  if (showAuth)
+    return view === "signup" ? (
+      <Signup
+        artisan={selected}
+        onSuccess={finishAuth}
+        onLogin={() => setView("login")}
+        onBack={cancelAuth}
+      />
+    ) : (
+      <Login
+        artisan={selected}
+        onSuccess={finishAuth}
+        onSignup={() => setView("signup")}
+        onBack={cancelAuth}
+      />
+    );
   return (
     <div className="app-shell">
-      <Header view={view} home={goHome} />
-      {view === "home" ? (
+      <Header view={shellView} home={goHome} />
+      {view === "profile" ? (
+        <Profile
+          artisan={selected}
+          saved={saved.includes(selected.id)}
+          toggleSaved={() => toggleSaved(selected.id)}
+          goChat={() => goChat()}
+          back={goHome}
+        />
+      ) : (
         <Home
           artisans={filtered}
           filter={filter}
@@ -62,14 +118,6 @@ export default function App() {
           toggleSaved={toggleSaved}
           goProfile={goProfile}
           goChat={goChat}
-        />
-      ) : (
-        <Profile
-          artisan={selected}
-          saved={saved.includes(selected.id)}
-          toggleSaved={() => toggleSaved(selected.id)}
-          goChat={() => goChat()}
-          back={goHome}
         />
       )}
       {view !== "profile" ? <MobileNav home={goHome} /> : null}

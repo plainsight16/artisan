@@ -1,7 +1,12 @@
-import type { View } from "../types";
 import { Icon } from "./Icon";
 
-export function Header({ view, home }: { view: View; home: () => void }) {
+export function Header({
+  view,
+  home,
+}: {
+  view: "home" | "profile";
+  home: () => void;
+}) {
   return (
     <header className="topbar">
       <button className="brand-mark" onClick={home} aria-label="Home">
