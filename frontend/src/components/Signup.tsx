@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from "react";
 import type { Artisan } from "../types";
+import type { AuthIntent } from "../auth/gate";
+import { authCopy } from "../auth/copy";
 import type { Session } from "../auth/session";
 import { sessionFromSignup } from "../auth/session";
 import { validateSignup } from "../auth/validate";
@@ -7,11 +9,13 @@ import { AuthShell } from "./AuthShell";
 
 export function Signup({
   artisan,
+  intent,
   onSuccess,
   onLogin,
   onBack,
 }: {
   artisan: Artisan;
+  intent: AuthIntent;
   onSuccess: (session: Session) => void;
   onLogin: () => void;
   onBack: () => void;
@@ -20,6 +24,7 @@ export function Signup({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const copy = authCopy(intent, artisan);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -33,8 +38,8 @@ export function Signup({
 
   return (
     <AuthShell
-      eyebrow="TO CONTINUE YOUR CONVERSATION"
-      title={`Create an account to chat with ${artisan.name}`}
+      eyebrow={copy.eyebrow}
+      title={copy.signupTitle}
       switchPrompt="Already have an account?"
       switchLabel="Sign in instead"
       onSwitch={onLogin}

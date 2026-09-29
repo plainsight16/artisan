@@ -1,11 +1,24 @@
 import { Icon } from "./Icon";
+import { ProfileMenu } from "./ProfileMenu";
+import type { AccountPanel } from "../types";
+import type { Session } from "../auth/session";
 
 export function Header({
   view,
   home,
+  session,
+  onOpenAccount,
+  onLogin,
+  onSignup,
+  onLogout,
 }: {
-  view: "home" | "profile";
+  view: "home" | "profile" | "account";
   home: () => void;
+  session: Session | null;
+  onOpenAccount: (panel?: AccountPanel) => void;
+  onLogin: () => void;
+  onSignup: () => void;
+  onLogout: () => void;
 }) {
   return (
     <header className="topbar">
@@ -21,7 +34,14 @@ export function Header({
         </button>
         <button>Messages</button>
         <button>Jobs</button>
-        <button>Profile</button>
+        <ProfileMenu
+          session={session}
+          active={view === "account"}
+          onOpenAccount={onOpenAccount}
+          onLogin={onLogin}
+          onSignup={onSignup}
+          onLogout={onLogout}
+        />
       </nav>
       <button className="icon-button">
         <Icon>search</Icon>

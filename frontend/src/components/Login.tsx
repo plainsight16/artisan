@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from "react";
 import type { Artisan } from "../types";
+import type { AuthIntent } from "../auth/gate";
+import { authCopy } from "../auth/copy";
 import type { Session } from "../auth/session";
 import { sessionFromLogin } from "../auth/session";
 import { validateCredentials } from "../auth/validate";
@@ -7,11 +9,13 @@ import { AuthShell } from "./AuthShell";
 
 export function Login({
   artisan,
+  intent,
   onSuccess,
   onSignup,
   onBack,
 }: {
   artisan: Artisan;
+  intent: AuthIntent;
   onSuccess: (session: Session) => void;
   onSignup: () => void;
   onBack: () => void;
@@ -19,6 +23,7 @@ export function Login({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const copy = authCopy(intent, artisan);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -32,8 +37,8 @@ export function Login({
 
   return (
     <AuthShell
-      eyebrow="TO CONTINUE YOUR CONVERSATION"
-      title={`Sign in to chat with ${artisan.name}`}
+      eyebrow={copy.eyebrow}
+      title={copy.loginTitle}
       switchPrompt="New here?"
       switchLabel="Create an account"
       onSwitch={onSignup}

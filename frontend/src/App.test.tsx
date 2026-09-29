@@ -30,10 +30,7 @@ describe("gated login and signup", () => {
       screen.queryByRole("heading", { name: /Create an account to chat/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Sign in" }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Create account" }),
+      screen.queryByRole("heading", { name: /Sign in to view your profile/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -145,5 +142,132 @@ describe("gated login and signup", () => {
       "Enter a valid email address.",
     );
     expect(screen.queryByPlaceholderText("Write a message...")).toBeNull();
+  });
+});
+
+describe("account profile", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.scrollTo = () => {};
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  function profileButtons() {
+    return screen.getAllByRole("button", { name: "Profile" });
+  }
+
+  it("shows a sign-in prompt in the profile dropdown for guests", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.hover(profileButtons()[0]);
+
+    expect(
+      screen.getByText(/Sign in or create an account to save artisans/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Create account" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Saved artisans" })).toBeNull();
+  });
+
+  it("opens login instead of the account page when a guest clicks Profile", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(profileButtons()[0]);
+
+    expect(
+      screen.getByRole("heading", { name: "Sign in to view your profile" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Saved artisans" })).toBeNull();
+  });
+
+  it("opens signup from the guest profile dropdown", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.hover(profileButtons()[0]);
+    await user.click(screen.getByRole("button", { name: "Create account" }));
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Create an account to hire with confidence",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the account workspace after signing in from Profile", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(profileButtons()[0]);
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "password1");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+
+    expect(screen.getByRole("heading", { name: "ada" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Saved artisans" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/You haven’t saved anyone yet/i),
+    ).toBeInTheDocument();
+  });
+
+  it("lists a saved artisan on the account page", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Save Tunde's Woodworks" }),
+    );
+    await user.click(profileButtons()[0]);
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "password1");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+
+    expect(screen.getByText("Tunde's Woodworks")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/You haven’t saved anyone yet/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("returns to explore after logout", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(profileButtons()[0]);
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "password1");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Open account menu" }));
+    await user.click(screen.getByRole("button", { name: "Log out" }));
+
+    expect(
+      screen.getByRole("heading", { name: /Verified artisans/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Saved artisans" })).toBeNull();
+  });
+
+  it("lets the account menu open a section then hide again", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(profileButtons()[0]);
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "password1");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Open account menu" }));
+    await user.click(screen.getByRole("button", { name: "My jobs" }));
+
+    expect(screen.getByRole("heading", { name: "My jobs" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Open account menu" }),
+    ).toHaveAttribute("aria-expanded", "false");
   });
 });

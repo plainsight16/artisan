@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isAuthReachable,
   viewAfterAuthSuccess,
+  viewForAccountIntent,
   viewForChatIntent,
 } from "./gate";
 import type { Session } from "./session";
@@ -18,13 +19,27 @@ describe("viewForChatIntent", () => {
   });
 });
 
+describe("viewForAccountIntent", () => {
+  it("sends signed-in users to their account", () => {
+    expect(viewForAccountIntent(session)).toBe("account");
+  });
+
+  it("asks guests to sign in instead of opening the account page", () => {
+    expect(viewForAccountIntent(null)).toBe("login");
+  });
+});
+
 describe("isAuthReachable", () => {
-  it("keeps login and signup unreachable until the user commits to a chat", () => {
+  it("keeps login and signup unreachable until the user commits", () => {
     expect(isAuthReachable(null)).toBe(false);
   });
 
-  it("opens auth only after a chat commitment", () => {
+  it("opens auth after a chat commitment", () => {
     expect(isAuthReachable("chat")).toBe(true);
+  });
+
+  it("opens auth after an account commitment", () => {
+    expect(isAuthReachable("account")).toBe(true);
   });
 });
 
@@ -33,7 +48,11 @@ describe("viewAfterAuthSuccess", () => {
     expect(viewAfterAuthSuccess("chat")).toBe("chat");
   });
 
-  it("does not invent a chat if auth was reached without intent", () => {
+  it("opens the account page when auth followed a profile commitment", () => {
+    expect(viewAfterAuthSuccess("account")).toBe("account");
+  });
+
+  it("does not invent a destination if auth was reached without intent", () => {
     expect(viewAfterAuthSuccess(null)).toBe("home");
   });
 });

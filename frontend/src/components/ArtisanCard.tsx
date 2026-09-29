@@ -32,6 +32,7 @@ export function ArtisanCard({
           </div>
           <button
             className={saved ? "save saved" : "save"}
+            aria-label={saved ? `Unsave ${artisan.name}` : `Save ${artisan.name}`}
             onClick={() => toggleSaved(artisan.id)}
           >
             <Icon>favorite</Icon>

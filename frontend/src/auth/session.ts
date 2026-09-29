@@ -33,6 +33,14 @@ export function saveSession(session: Session): void {
   }
 }
 
+export function clearSession(): void {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+  } catch {
+    // private browsing or disabled storage
+  }
+}
+
 export function sessionFromLogin(email: string): Session {
   const local = email.split("@")[0] || "Guest";
   return { name: local, email };

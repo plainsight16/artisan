@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  clearSession,
   loadSession,
   saveSession,
   SESSION_KEY,
@@ -31,6 +32,12 @@ describe("session storage", () => {
 
   it("ignores corrupt storage", () => {
     localStorage.setItem(SESSION_KEY, "{not json");
+    expect(loadSession()).toBeNull();
+  });
+
+  it("clears a saved session", () => {
+    saveSession({ name: "Ada", email: "ada@example.com" });
+    clearSession();
     expect(loadSession()).toBeNull();
   });
 });

@@ -1,9 +1,17 @@
 import { Icon } from "./Icon";
 
-export function MobileNav({ home }: { home: () => void }) {
+export function MobileNav({
+  view,
+  home,
+  goAccount,
+}: {
+  view: "home" | "profile" | "account";
+  home: () => void;
+  goAccount: () => void;
+}) {
   return (
     <nav className="mobile-nav">
-      <button className="active" onClick={home}>
+      <button className={view === "home" ? "active" : ""} onClick={home}>
         <Icon>explore</Icon>
         <span>Explore</span>
       </button>
@@ -15,7 +23,10 @@ export function MobileNav({ home }: { home: () => void }) {
         <Icon>work</Icon>
         <span>Jobs</span>
       </button>
-      <button>
+      <button
+        className={view === "account" ? "active" : ""}
+        onClick={goAccount}
+      >
         <Icon>person</Icon>
         <span>Profile</span>
       </button>
