@@ -1,18 +1,11 @@
-import type { Artisan } from "../types";
+import type { Artisan, TradeFilter } from "../types";
+import { TRADE_FILTERS } from "../data/artisans";
 import { ArtisanCard } from "./ArtisanCard";
-
-const CATEGORIES = [
-  "All Trades",
-  "Carpentry",
-  "Welding",
-  "Plumbing",
-  "Electrical",
-  "Shoemaking",
-];
 
 export function Home({
   artisans,
   filter,
+  query,
   setFilter,
   saved,
   toggleSaved,
@@ -20,13 +13,15 @@ export function Home({
   goChat,
 }: {
   artisans: Artisan[];
-  filter: string;
-  setFilter: (x: string) => void;
+  filter: TradeFilter;
+  query: string;
+  setFilter: (x: TradeFilter) => void;
   saved: number[];
   toggleSaved: (id: number) => void;
   goProfile: (x: Artisan) => void;
   goChat: (x: Artisan) => void;
 }) {
+  const empty = artisans.length === 0;
   return (
     <main className="home">
       <section className="intro">
@@ -42,13 +37,13 @@ export function Home({
         </p>
       </section>
       <section className="categories">
-        {CATEGORIES.map((x) => (
+        {TRADE_FILTERS.map((item) => (
           <button
-            key={x}
-            onClick={() => setFilter(x)}
-            className={filter === x ? "selected" : ""}
+            key={item}
+            onClick={() => setFilter(item)}
+            className={filter === item ? "selected" : ""}
           >
-            {x}
+            {item}
           </button>
         ))}
       </section>
@@ -57,20 +52,31 @@ export function Home({
           <p className="eyebrow">DISCOVER</p>
           <h2>Ready when you are</h2>
         </div>
-        <span>{artisans.length} professionals</span>
+        <span>
+          {artisans.length}{" "}
+          {artisans.length === 1 ? "professional" : "professionals"}
+        </span>
       </section>
-      <section className="artisan-grid">
-        {artisans.map((a) => (
-          <ArtisanCard
-            key={a.id}
-            artisan={a}
-            saved={saved.includes(a.id)}
-            toggleSaved={toggleSaved}
-            goProfile={goProfile}
-            goChat={goChat}
-          />
-        ))}
-      </section>
+      {empty ? (
+        <p className="explore-empty">
+          {query.trim()
+            ? "No artisans match that search."
+            : `No artisans listed for ${filter} yet.`}
+        </p>
+      ) : (
+        <section className="artisan-grid">
+          {artisans.map((artisan) => (
+            <ArtisanCard
+              key={artisan.id}
+              artisan={artisan}
+              saved={saved.includes(artisan.id)}
+              toggleSaved={toggleSaved}
+              goProfile={goProfile}
+              goChat={goChat}
+            />
+          ))}
+        </section>
+      )}
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./index.css";
 import "./App.css";
-import type { AccountPanel, Artisan, View } from "./types";
+import type { AccountPanel, Artisan, TradeFilter, View } from "./types";
 import { artisans, filterArtisans } from "./data/artisans";
 import type { AuthIntent } from "./auth/gate";
 import {
@@ -25,7 +25,9 @@ import { MobileNav } from "./components/MobileNav";
 export default function App() {
   const [view, setView] = useState<View>("home");
   const [selected, setSelected] = useState<Artisan>(artisans[0]);
-  const [filter, setFilter] = useState("All Trades");
+  const [filter, setFilter] = useState<TradeFilter>("All Trades");
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [saved, setSaved] = useState<number[]>([]);
   const [session, setSession] = useState<Session | null>(() => loadSession());
   const [intent, setIntent] = useState<AuthIntent>(null);
@@ -34,7 +36,7 @@ export default function App() {
   >("home");
   const [accountPanel, setAccountPanel] = useState<AccountPanel>("saved");
   const [openThread, setOpenThread] = useState(false);
-  const filtered = filterArtisans(filter);
+  const filtered = filterArtisans(filter, query);
   const showAuth =
     (view === "login" || view === "signup") && isAuthReachable(intent);
   const shellView =
@@ -57,6 +59,14 @@ export default function App() {
     }
   };
   const goHome = () => setView("home");
+  const openSearch = () => {
+    setView("home");
+    setSearchOpen(true);
+  };
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setQuery("");
+  };
   const goProfile = (artisan: Artisan) => {
     setSelected(artisan);
     setView("profile");
@@ -149,6 +159,11 @@ export default function App() {
         view={shellView}
         home={goHome}
         session={session}
+        searchOpen={searchOpen}
+        query={query}
+        setQuery={setQuery}
+        onOpenSearch={openSearch}
+        onCloseSearch={closeSearch}
         onOpenAccount={goAccount}
         onOpenMessages={goMessages}
         onLogin={() => startAccountAuth("login")}
@@ -183,6 +198,7 @@ export default function App() {
         <Home
           artisans={filtered}
           filter={filter}
+          query={query}
           setFilter={setFilter}
           saved={saved}
           toggleSaved={toggleSaved}

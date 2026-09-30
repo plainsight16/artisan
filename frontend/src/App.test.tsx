@@ -359,3 +359,76 @@ describe("messages inbox", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("explore filters and search", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.scrollTo = () => {};
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("shows welding jobs when Welding is selected", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Welding" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Bisi Welding" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Iron Masters" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Tunde's Woodworks" }),
+    ).toBeNull();
+    expect(screen.getByText("2 professionals")).toBeInTheDocument();
+  });
+
+  it("shows the tagged carpentry job under Carpentry", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Carpentry" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Tunde's Woodworks" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Bisi Welding" })).toBeNull();
+    expect(screen.getByText("1 professional")).toBeInTheDocument();
+  });
+
+  it("opens search from the header icon and filters artisans", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Search artisans" }));
+    await user.type(screen.getByLabelText("Search artisans"), "yaba");
+
+    expect(
+      screen.getByRole("heading", { name: "Lagos Cobblers" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Tunde's Woodworks" }),
+    ).toBeNull();
+  });
+
+  it("clears search when the search field is closed", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Search artisans" }));
+    await user.type(screen.getByLabelText("Search artisans"), "yaba");
+    await user.click(screen.getByRole("button", { name: "Close search" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Tunde's Woodworks" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Search artisans" }),
+    ).toBeInTheDocument();
+  });
+});

@@ -1,10 +1,20 @@
-import type { Artisan } from "../types";
+import type { Artisan, TradeFilter } from "../types";
+
+export const TRADE_FILTERS: TradeFilter[] = [
+  "All Trades",
+  "Carpentry",
+  "Welding",
+  "Plumbing",
+  "Electrical",
+  "Shoemaking",
+];
 
 export const artisans: Artisan[] = [
   {
     id: 1,
     name: "Tunde's Woodworks",
     trade: "Carpenter",
+    category: "Carpentry",
     location: "Ikeja",
     rating: "4.9",
     reviews: 124,
@@ -16,6 +26,7 @@ export const artisans: Artisan[] = [
     id: 2,
     name: "Bisi Welding",
     trade: "Welder",
+    category: "Welding",
     location: "Surulere",
     rating: "4.8",
     reviews: 89,
@@ -27,6 +38,7 @@ export const artisans: Artisan[] = [
     id: 3,
     name: "Godwin Plumbing",
     trade: "Plumber",
+    category: "Plumbing",
     location: "Lekki",
     rating: "4.7",
     reviews: 210,
@@ -38,6 +50,7 @@ export const artisans: Artisan[] = [
     id: 4,
     name: "Lagos Cobblers",
     trade: "Shoemaker",
+    category: "Shoemaking",
     location: "Yaba",
     rating: "4.9",
     reviews: 156,
@@ -49,6 +62,7 @@ export const artisans: Artisan[] = [
     id: 5,
     name: "Kola Electric",
     trade: "Electrician",
+    category: "Electrical",
     location: "Mushin",
     rating: "4.6",
     reviews: 42,
@@ -60,6 +74,7 @@ export const artisans: Artisan[] = [
     id: 6,
     name: "Iron Masters",
     trade: "Welder",
+    category: "Welding",
     location: "Apapa",
     rating: "4.8",
     reviews: 67,
@@ -69,7 +84,22 @@ export const artisans: Artisan[] = [
   },
 ];
 
-export function filterArtisans(filter: string): Artisan[] {
-  if (filter === "All Trades") return artisans;
-  return artisans.filter((a) => a.trade === filter.slice(0, -1));
+export function filterArtisans(
+  filter: TradeFilter,
+  query = "",
+): Artisan[] {
+  const needle = query.trim().toLowerCase();
+  return artisans.filter((artisan) => {
+    if (filter !== "All Trades" && artisan.category !== filter) return false;
+    if (!needle) return true;
+    const haystack = [
+      artisan.name,
+      artisan.trade,
+      artisan.category,
+      artisan.location,
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(needle);
+  });
 }
