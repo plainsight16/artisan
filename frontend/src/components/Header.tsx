@@ -8,14 +8,16 @@ export function Header({
   home,
   session,
   onOpenAccount,
+  onOpenMessages,
   onLogin,
   onSignup,
   onLogout,
 }: {
-  view: "home" | "profile" | "account";
+  view: "home" | "profile" | "account" | "messages";
   home: () => void;
   session: Session | null;
   onOpenAccount: (panel?: AccountPanel) => void;
+  onOpenMessages: () => void;
   onLogin: () => void;
   onSignup: () => void;
   onLogout: () => void;
@@ -32,7 +34,12 @@ export function Header({
         <button className={view === "home" ? "active" : ""} onClick={home}>
           Explore
         </button>
-        <button>Messages</button>
+        <button
+          className={view === "messages" ? "active" : ""}
+          onClick={onOpenMessages}
+        >
+          Messages
+        </button>
         <button>Jobs</button>
         <ProfileMenu
           session={session}

@@ -1,7 +1,7 @@
 export type View =
   | "home"
   | "profile"
-  | "chat"
+  | "messages"
   | "login"
   | "signup"
   | "account";

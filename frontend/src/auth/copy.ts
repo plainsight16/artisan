@@ -9,6 +9,13 @@ export function authCopy(intent: AuthIntent, artisan: Artisan) {
       signupTitle: "Create an account to hire with confidence",
     };
   }
+  if (intent === "messages") {
+    return {
+      eyebrow: "YOUR CONVERSATIONS",
+      loginTitle: "Sign in to view your messages",
+      signupTitle: "Create an account to message artisans",
+    };
+  }
   return {
     eyebrow: "TO CONTINUE YOUR CONVERSATION",
     loginTitle: `Sign in to chat with ${artisan.name}`,

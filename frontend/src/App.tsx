@@ -9,6 +9,7 @@ import {
   viewAfterAuthSuccess,
   viewForAccountIntent,
   viewForChatIntent,
+  viewForMessagesIntent,
 } from "./auth/gate";
 import type { Session } from "./auth/session";
 import { clearSession, loadSession, saveSession } from "./auth/session";
@@ -16,7 +17,7 @@ import { Header } from "./components/Header";
 import { Home } from "./components/Home";
 import { Profile } from "./components/Profile";
 import { Account } from "./components/Account";
-import { Chat } from "./components/Chat";
+import { Messages } from "./components/Messages";
 import { Login } from "./components/Login";
 import { Signup } from "./components/Signup";
 import { MobileNav } from "./components/MobileNav";
@@ -26,22 +27,32 @@ export default function App() {
   const [selected, setSelected] = useState<Artisan>(artisans[0]);
   const [filter, setFilter] = useState("All Trades");
   const [saved, setSaved] = useState<number[]>([]);
-  const [messages, setMessages] = useState<string[]>([]);
-  const [draft, setDraft] = useState("");
   const [session, setSession] = useState<Session | null>(() => loadSession());
   const [intent, setIntent] = useState<AuthIntent>(null);
-  const [returnView, setReturnView] = useState<"home" | "profile" | "account">(
-    "home",
-  );
+  const [returnView, setReturnView] = useState<
+    "home" | "profile" | "account" | "messages"
+  >("home");
   const [accountPanel, setAccountPanel] = useState<AccountPanel>("saved");
+  const [openThread, setOpenThread] = useState(false);
   const filtered = filterArtisans(filter);
   const showAuth =
     (view === "login" || view === "signup") && isAuthReachable(intent);
   const shellView =
-    view === "account" ? "account" : view === "profile" ? "profile" : "home";
+    view === "messages"
+      ? "messages"
+      : view === "account"
+        ? "account"
+        : view === "profile"
+          ? "profile"
+          : "home";
 
   const rememberReturn = () => {
-    if (view === "profile" || view === "account" || view === "home") {
+    if (
+      view === "profile" ||
+      view === "account" ||
+      view === "home" ||
+      view === "messages"
+    ) {
       setReturnView(view);
     }
   };
@@ -53,11 +64,24 @@ export default function App() {
   };
   const goChat = (artisan = selected) => {
     setSelected(artisan);
+    setOpenThread(true);
     rememberReturn();
     window.scrollTo(0, 0);
     const next = viewForChatIntent(session);
     if (next === "login") setIntent("chat");
     setView(next);
+  };
+  const goMessages = () => {
+    setOpenThread(false);
+    rememberReturn();
+    window.scrollTo(0, 0);
+    const next = viewForMessagesIntent(session);
+    if (next === "login") {
+      setIntent("messages");
+      setView("login");
+      return;
+    }
+    setView("messages");
   };
   const goAccount = (panel: AccountPanel = "saved") => {
     rememberReturn();
@@ -100,23 +124,7 @@ export default function App() {
       x.includes(id) ? x.filter((n) => n !== id) : [...x, id],
     );
   };
-  const send = () => {
-    if (!draft.trim()) return;
-    setMessages((m) => [...m, draft.trim()]);
-    setDraft("");
-  };
 
-  if (view === "chat")
-    return (
-      <Chat
-        artisan={selected}
-        messages={messages}
-        draft={draft}
-        setDraft={setDraft}
-        send={send}
-        back={() => setView("profile")}
-      />
-    );
   if (showAuth)
     return view === "signup" ? (
       <Signup
@@ -142,6 +150,7 @@ export default function App() {
         home={goHome}
         session={session}
         onOpenAccount={goAccount}
+        onOpenMessages={goMessages}
         onLogin={() => startAccountAuth("login")}
         onSignup={() => startAccountAuth("signup")}
         onLogout={logout}
@@ -163,6 +172,13 @@ export default function App() {
           goProfile={goProfile}
           onLogout={logout}
         />
+      ) : view === "messages" && session ? (
+        <Messages
+          key={openThread ? selected.id : "inbox"}
+          focusArtisan={openThread ? selected : null}
+          openThread={openThread}
+          onViewProfile={goProfile}
+        />
       ) : (
         <Home
           artisans={filtered}
@@ -175,7 +191,12 @@ export default function App() {
         />
       )}
       {view !== "profile" ? (
-        <MobileNav view={shellView} home={goHome} goAccount={() => goAccount()} />
+        <MobileNav
+          view={shellView}
+          home={goHome}
+          goAccount={() => goAccount()}
+          goMessages={goMessages}
+        />
       ) : null}
     </div>
   );

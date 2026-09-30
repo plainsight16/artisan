@@ -4,10 +4,12 @@ export function MobileNav({
   view,
   home,
   goAccount,
+  goMessages,
 }: {
-  view: "home" | "profile" | "account";
+  view: "home" | "profile" | "account" | "messages";
   home: () => void;
   goAccount: () => void;
+  goMessages: () => void;
 }) {
   return (
     <nav className="mobile-nav">
@@ -15,7 +17,10 @@ export function MobileNav({
         <Icon>explore</Icon>
         <span>Explore</span>
       </button>
-      <button>
+      <button
+        className={view === "messages" ? "active" : ""}
+        onClick={goMessages}
+      >
         <Icon>chat_bubble</Icon>
         <span>Messages</span>
       </button>

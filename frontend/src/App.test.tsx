@@ -91,7 +91,9 @@ describe("gated login and signup", () => {
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
     expect(screen.getByPlaceholderText("Write a message...")).toBeInTheDocument();
-    expect(screen.getByText("Tunde's Woodworks")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "View Tunde's Woodworks profile" }),
+    ).toBeInTheDocument();
   });
 
   it("continues into chat after signup from a profile conversation", async () => {
@@ -109,7 +111,9 @@ describe("gated login and signup", () => {
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     expect(screen.getByPlaceholderText("Write a message...")).toBeInTheDocument();
-    expect(screen.getByText("Bisi Welding")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "View Bisi Welding profile" }),
+    ).toBeInTheDocument();
   });
 
   it("skips auth on the next chat once the session exists", async () => {
@@ -120,12 +124,13 @@ describe("gated login and signup", () => {
     await user.type(screen.getByLabelText("Email"), "ada@example.com");
     await user.type(screen.getByLabelText("Password"), "password1");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
-    await user.click(screen.getByRole("button", { name: "Back to profile" }));
     await user.click(screen.getAllByRole("button", { name: "Explore" })[0]);
     await user.click(chatButtons()[1]);
 
     expect(screen.getByPlaceholderText("Write a message...")).toBeInTheDocument();
-    expect(screen.getByText("Bisi Welding")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "View Bisi Welding profile" }),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("heading", { name: /Sign in to chat/i }),
     ).not.toBeInTheDocument();
@@ -269,5 +274,88 @@ describe("account profile", () => {
     expect(
       screen.getByRole("button", { name: "Open account menu" }),
     ).toHaveAttribute("aria-expanded", "false");
+  });
+});
+
+describe("messages inbox", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.scrollTo = () => {};
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  function messagesButtons() {
+    return screen.getAllByRole("button", { name: "Messages" });
+  }
+
+  it("asks a guest to sign in when they open Messages", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(messagesButtons()[0]);
+
+    expect(
+      screen.getByRole("heading", { name: "Sign in to view your messages" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the inbox and a thread after sign-in from Messages", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(messagesButtons()[0]);
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "password1");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+
+    expect(
+      screen.getByRole("heading", { name: "My messages" }),
+    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Write a message...")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "View Tunde's Woodworks profile" }),
+    ).toBeInTheDocument();
+  });
+
+  it("filters the inbox to unread threads", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(messagesButtons()[0]);
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "password1");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Unread (2)" }));
+
+    expect(
+      screen.getByRole("button", { name: "View Tunde's Woodworks profile" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Compound gate repair/ }),
+    ).toBeNull();
+  });
+
+  it("opens a conversation from the inbox list", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(messagesButtons()[0]);
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "password1");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: /Bisi Welding/ }));
+
+    expect(
+      screen.getByRole("button", { name: "View Bisi Welding profile" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Back to messages" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Should I lock that in/i),
+    ).toBeInTheDocument();
   });
 });
