@@ -21,6 +21,7 @@ import { Messages } from "./components/Messages";
 import { Login } from "./components/Login";
 import { Signup } from "./components/Signup";
 import { MobileNav } from "./components/MobileNav";
+import { InstallBanner } from "./components/InstallBanner";
 
 export default function App() {
   const [view, setView] = useState<View>("home");
@@ -214,6 +215,7 @@ export default function App() {
           goMessages={goMessages}
         />
       ) : null}
+      <InstallBanner />
     </div>
   );
 }

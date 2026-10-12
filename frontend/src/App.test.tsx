@@ -432,3 +432,35 @@ describe("explore filters and search", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("PWA install prompt", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.scrollTo = () => {};
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("does not show an install banner until the browser is ready", () => {
+    render(<App />);
+    expect(screen.queryByText("Install Artisan")).toBeNull();
+  });
+
+  it("lets the visitor install or dismiss once the browser can prompt", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const event = new Event("beforeinstallprompt", { cancelable: true });
+    Object.assign(event, {
+      prompt: () => Promise.resolve(),
+      userChoice: Promise.resolve({ outcome: "accepted", platform: "web" }),
+    });
+    window.dispatchEvent(event);
+
+    expect(await screen.findByText("Install Artisan")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Dismiss install" }));
+    expect(screen.queryByText("Install Artisan")).toBeNull();
+  });
+});
