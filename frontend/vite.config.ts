@@ -11,7 +11,15 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "apple-touch-icon.png", "icon.svg"],
+      includeAssets: [
+        "favicon.svg",
+        "icon.svg",
+        "apple-touch-icon.png",
+        "pwa-192x192.png",
+        "pwa-512x512.png",
+        "screenshot-wide.png",
+        "screenshot-narrow.png",
+      ],
       manifest: {
         id: "/",
         name: "Artisan",
@@ -32,7 +40,6 @@ export default defineConfig({
             src: "pwa-192x192.png",
             sizes: "192x192",
             type: "image/png",
-            purpose: "any",
           },
           {
             src: "pwa-512x512.png",
@@ -47,11 +54,27 @@ export default defineConfig({
             purpose: "maskable",
           },
         ],
+        screenshots: [
+          {
+            src: "screenshot-wide.png",
+            sizes: "1280x720",
+            type: "image/png",
+            form_factor: "wide",
+            label: "Browse verified Lagos artisans on desktop",
+          },
+          {
+            src: "screenshot-narrow.png",
+            sizes: "540x720",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "Find and chat with artisans on your phone",
+          },
+        ],
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,webp}"],
         navigateFallback: "index.html",
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /\.(?:png|svg|jpg|jpeg|webp|ico)$/i],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
